@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- Project from https://start.vaadin.com/project/e2a7f8b1-8c94-4db1-b9ef-12ef321d865f -->
     <groupId>com.example.application</groupId>
-    <artifactId>GiftsListIW</artifactId>
-    <name>GiftsListIW</name>
+    <artifactId>GiftsList</artifactId>
+    <name>GiftsList</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
