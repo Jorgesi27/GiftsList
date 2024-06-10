@@ -2,6 +2,7 @@ package com.example.application.data;
 
 import com.example.application.enums.EstadoRegalo;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public class Regalo {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 

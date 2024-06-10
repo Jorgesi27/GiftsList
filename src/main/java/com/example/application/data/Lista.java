@@ -2,6 +2,8 @@ package com.example.application.data;
 
 import com.example.application.enums.EstadoLista;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
@@ -17,6 +19,7 @@ public class Lista {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
@@ -24,6 +27,7 @@ public class Lista {
     @Column(name = "estado", nullable = false, length = 15)
     private EstadoLista estado;
 
+    @NotNull
     @Column(name = "coste", nullable = false)
     private Double coste;
 

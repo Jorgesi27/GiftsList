@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Route(value = "allegados")
 @PageTitle("Gestionar Allegados")
 @AnonymousAllowed
-public class AllegadoPresentacion extends VerticalLayout {
+public class AllegadoView extends VerticalLayout {
 
     private AllegadoService allegadoService;
     private Grid<Allegado> grid = new Grid<>(Allegado.class);
@@ -26,7 +26,7 @@ public class AllegadoPresentacion extends VerticalLayout {
     private Button deleteButton = new Button("Borrar");
 
     @Autowired
-    public AllegadoPresentacion(AllegadoService allegadoService){
+    public AllegadoView(AllegadoService allegadoService){
 
         this.allegadoService = allegadoService;
 
