@@ -1,7 +1,7 @@
-package com.example.application.negocio;
+package com.example.application.services;
 
-import com.example.application.data.Lista;
-import com.example.application.data.ListaRepository;
+import com.example.application.domain.Lista;
+import com.example.application.domain.ListaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

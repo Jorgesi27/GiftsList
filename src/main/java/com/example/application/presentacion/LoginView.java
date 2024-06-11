@@ -1,47 +1,47 @@
 package com.example.application.presentacion;
 
-import com.example.application.views.main.MainView;
-import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.UI;
+import com.example.application.security.AuthenticatedUser;
+import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 
-@Route("login")
 @AnonymousAllowed
-public class LoginView extends Composite<LoginOverlay> {
+@PageTitle("Login")
+@Route(value = "login")
+public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticatedUser authenticatedUser;
 
-    public LoginView(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public LoginView(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
 
-        LoginOverlay loginOverlay = getContent();
-        loginOverlay.setTitle("App de Listas de Regalos");
-        loginOverlay.setDescription("Crea listas de regalos para tus allegados");
-        loginOverlay.setOpened(true);
+        LoginI18n i18n = LoginI18n.createDefault();
+        i18n.setHeader(new LoginI18n.Header());
+        i18n.getHeader().setTitle("Gifts Lists");
+        i18n.getHeader().setDescription("Inicia sesión para acceder");
+        i18n.setAdditionalInformation(null);
+        setI18n(i18n);
 
-        loginOverlay.addLoginListener(event -> {
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    event.getUsername(),
-                    event.getPassword()
-            );
-            try {
-                Authentication authenticated = authenticationManager.authenticate(authentication);
-                if (authenticated.isAuthenticated()) {
-                    UI.getCurrent().navigate(MainView.class);
-                } else {
-                    loginOverlay.setError(true);
-                    loginOverlay.setDescription("Credenciales incorrectas");
-                }
-            } catch (BadCredentialsException e) {
-                loginOverlay.setError(true);
-                loginOverlay.setDescription("Credenciales incorrectas");
-            }
-        });
+        setForgotPasswordButtonVisible(false);
+        setOpened(true);
+    }
+
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (authenticatedUser.get().isPresent()) {
+            // Already logged in
+            setOpened(false);
+            event.forwardTo("");
+        }
+
+        setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
     }
 }

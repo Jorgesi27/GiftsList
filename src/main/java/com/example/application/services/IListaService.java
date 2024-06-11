@@ -1,6 +1,6 @@
-package com.example.application.negocio;
+package com.example.application.services;
 
-import com.example.application.data.Lista;
+import com.example.application.domain.Lista;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

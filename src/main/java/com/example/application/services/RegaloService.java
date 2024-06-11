@@ -1,7 +1,7 @@
-package com.example.application.negocio;
+package com.example.application.services;
 
-import com.example.application.data.Regalo;
-import com.example.application.data.RegaloRepository;
+import com.example.application.domain.Regalo;
+import com.example.application.domain.RegaloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;

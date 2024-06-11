@@ -1,7 +1,7 @@
 package com.example.application.presentacion;
 
-import com.example.application.data.Lista;
-import com.example.application.negocio.ListaService;
+import com.example.application.domain.Lista;
+import com.example.application.services.ListaService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
@@ -24,7 +24,7 @@ public class ListaView extends VerticalLayout {
     public ListaView(ListaService listaService) {
         this.listaService = listaService;
 
-        grid.setColumns("nombre", "costeTotal", "estado");
+        grid.setColumns("nombre", "coste", "estado");
         grid.setItems(listaService.findAll());
 
         createButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("crear-lista")));

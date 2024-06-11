@@ -1,4 +1,4 @@
-package com.example.application.data;
+package com.example.application.domain;
 
 import com.example.application.enums.EstadoLista;
 import jakarta.persistence.*;
@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +18,8 @@ import java.util.UUID;
 public class Lista {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     @NotBlank

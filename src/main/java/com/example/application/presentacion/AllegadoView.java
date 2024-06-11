@@ -1,7 +1,7 @@
 package com.example.application.presentacion;
 
-import com.example.application.data.Allegado;
-import com.example.application.negocio.AllegadoService;
+import com.example.application.domain.Allegado;
+import com.example.application.services.AllegadoService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;

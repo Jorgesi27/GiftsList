@@ -1,4 +1,4 @@
-package com.example.application.data;
+package com.example.application.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;

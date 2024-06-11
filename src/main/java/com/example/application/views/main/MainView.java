@@ -6,12 +6,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @PageTitle("main")
 @Route(value = "")
 @RouteAlias(value = "")
-@PreAuthorize("isAuthenticated()")
+@PermitAll
 public class MainView extends HorizontalLayout {
 
     private Button allegadoView;

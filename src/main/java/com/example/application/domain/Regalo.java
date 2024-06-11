@@ -1,10 +1,12 @@
-package com.example.application.data;
+package com.example.application.domain;
 
 import com.example.application.enums.EstadoRegalo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 @Setter
@@ -14,7 +16,8 @@ import java.util.UUID;
 public class Regalo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     @NotBlank
