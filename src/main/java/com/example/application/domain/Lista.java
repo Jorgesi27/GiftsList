@@ -26,13 +26,14 @@ public class Lista {
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 15)
     private EstadoLista estado;
 
     @NotNull
     @Column(name = "coste", nullable = false)
-    private Double coste;
+    private Double coste = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario")

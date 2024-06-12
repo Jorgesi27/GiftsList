@@ -1,47 +1,60 @@
 package com.example.application.presentacion;
 
-import com.example.application.security.AuthenticatedUser;
-import com.vaadin.flow.component.login.LoginI18n;
-import com.vaadin.flow.component.login.LoginOverlay;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
+import com.example.application.domain.Usuario;
+import com.example.application.services.UserManagementService;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-@AnonymousAllowed
+import java.util.Optional;
+
+@Route("login")
 @PageTitle("Login")
-@Route(value = "login")
-public class LoginView extends LoginOverlay implements BeforeEnterObserver {
+public class LoginView extends VerticalLayout {
 
-    private final AuthenticatedUser authenticatedUser;
+    private final UserManagementService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    public LoginView(AuthenticatedUser authenticatedUser) {
-        this.authenticatedUser = authenticatedUser;
-        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
+    @Autowired
+    public LoginView(UserManagementService userService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
 
-        LoginI18n i18n = LoginI18n.createDefault();
-        i18n.setHeader(new LoginI18n.Header());
-        i18n.getHeader().setTitle("Gifts Lists");
-        i18n.getHeader().setDescription("Inicia sesión para acceder");
-        i18n.setAdditionalInformation(null);
-        setI18n(i18n);
+        TextField emailField = new TextField("Email");
+        PasswordField passwordField = new PasswordField("Password");
 
-        setForgotPasswordButtonVisible(false);
-        setOpened(true);
+        Button loginButton = new Button("Login", event -> {
+            String email = emailField.getValue();
+            String password = passwordField.getValue();
+
+            if (authenticate(email, password)) {
+                Notification.show("Login exitoso");
+                getUI().ifPresent(ui -> ui.navigate("main"));  // Redirige a la vista principal después del login exitoso
+            } else {
+                Notification.show("Credenciales incorrectas");
+            }
+        });
+
+        Button registerButton = new Button("Register", event -> {
+            getUI().ifPresent(ui -> ui.navigate("userregistration")); // Redirige a la vista de registro
+        });
+
+        add(emailField, passwordField, loginButton, registerButton);
     }
 
+    private boolean authenticate(String email, String password) {
+        // Buscar al usuario por su correo electrónico en la base de datos
+        Optional<Usuario> userOptional = Optional.ofNullable(userService.loadUserByUsername(email));
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        if (authenticatedUser.get().isPresent()) {
-            // Already logged in
-            setOpened(false);
-            event.forwardTo("");
-        }
-
-        setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
+        // Verificar si se encontró al usuario y si la contraseña coincide
+        return userOptional.isPresent() &&
+                passwordEncoder.matches(password, userOptional.get().getPassword());
     }
 }
+

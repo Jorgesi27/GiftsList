@@ -11,4 +11,5 @@ public interface IListaService {
     Optional<Lista> findById(UUID id);
     List<Lista> findAll();
     void deleteById(UUID id);
+    void deleteListaAndRegalos(UUID listaId);
 }

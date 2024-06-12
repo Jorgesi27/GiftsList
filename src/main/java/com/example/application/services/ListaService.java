@@ -2,6 +2,7 @@ package com.example.application.services;
 
 import com.example.application.domain.Lista;
 import com.example.application.domain.ListaRepository;
+import com.example.application.domain.RegaloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -13,6 +14,11 @@ public class ListaService implements IListaService{
 
     @Autowired
     private ListaRepository listaRepository;
+    private final RegaloRepository regaloRepository;
+
+    public ListaService(RegaloRepository regaloRepository) { // Constructor para inyectar RegaloRepository
+        this.regaloRepository = regaloRepository;
+    }
 
     @Override
     public Lista save(Lista lista) {
@@ -32,5 +38,10 @@ public class ListaService implements IListaService{
     @Override
     public void deleteById(UUID id) {
         listaRepository.deleteById(id);
+    }
+
+    public void deleteListaAndRegalos(UUID listaId) {
+        regaloRepository.deleteByListaId(listaId);
+        listaRepository.deleteById(listaId);
     }
 }

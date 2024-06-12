@@ -14,10 +14,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfiguration extends VaadinWebSecurity {
 
-    /*@Bean
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }*/
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -27,9 +27,6 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll());
-
-        http.authorizeHttpRequests(
-                authorize -> authorize.requestMatchers(new AntPathRequestMatcher("/", "/main")).permitAll());
 
         super.configure(http);
         setLoginView(http, LoginView.class);

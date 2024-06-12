@@ -3,10 +3,14 @@ package com.example.application.services;
 import com.example.application.domain.Regalo;
 import com.example.application.domain.RegaloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class RegaloService implements IRegaloService{
 
     @Autowired
@@ -30,5 +34,9 @@ public class RegaloService implements IRegaloService{
     @Override
     public void deleteById(UUID id) {
         regaloRepository.deleteById(id);
+    }
+
+    public void deleteByListaId(UUID listaId) {
+        regaloRepository.deleteByListaId(listaId);
     }
 }

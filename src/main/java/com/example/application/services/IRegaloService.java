@@ -11,4 +11,5 @@ public interface IRegaloService {
     Optional<Regalo> findById(UUID id);
     List<Regalo> findAll();
     void deleteById(UUID id);
+    void deleteByListaId(UUID listaId);
 }

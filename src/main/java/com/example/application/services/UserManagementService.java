@@ -18,26 +18,29 @@ import java.util.UUID;
 public class UserManagementService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
-    //private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Autowired
-    public UserManagementService(UsuarioRepository usuarioRepository/*, PasswordEncoder passwordEncoder*/) {
+    public UserManagementService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.usuarioRepository = usuarioRepository;
-        //this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
-    /*public boolean registerUser(Usuario user) {
+    public boolean registerUser(Usuario user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRegisterCode(UUID.randomUUID().toString().substring(0, 5));
         user.addRole(Rol.USER);
 
         try {
             usuarioRepository.save(user);
+            emailService.sendRegistrationEmail(user);
             return true;
         } catch (DataIntegrityViolationException e) {
             return false;
         }
-    }*/
+    }
 
     @Override
     @Transactional
@@ -48,6 +51,21 @@ public class UserManagementService implements UserDetailsService {
         } else {
             return user.get();
         }
+    }
+
+    public boolean activateUser(String email, String registerCode) {
+
+        Optional<Usuario> user = usuarioRepository.findByEmail(email);
+
+        if (user.isPresent() && user.get().getRegisterCode().equals(registerCode)) {
+            user.get().setActive(true);
+            usuarioRepository.save(user.get());
+            return true;
+
+        } else {
+            return false;
+        }
+
     }
 
     public Optional<Usuario> loadUserById(UUID id) {

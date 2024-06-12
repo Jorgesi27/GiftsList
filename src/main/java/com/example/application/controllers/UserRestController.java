@@ -22,11 +22,11 @@ public class UserRestController{
         return service.loadActiveUsers();
     }
 
-    /*@PostMapping("/api/users")
+    @PostMapping("/api/users")
     void newUser(@RequestBody Usuario newUser) {
         service.registerUser(newUser);
 
-    }*/
+    }
 
     @GetMapping("/api/users/{id}")
     Usuario one(@PathVariable String id) {
