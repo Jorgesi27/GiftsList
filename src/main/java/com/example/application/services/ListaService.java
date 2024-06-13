@@ -16,7 +16,7 @@ public class ListaService implements IListaService{
     private ListaRepository listaRepository;
     private final RegaloRepository regaloRepository;
 
-    public ListaService(RegaloRepository regaloRepository) { // Constructor para inyectar RegaloRepository
+    public ListaService(RegaloRepository regaloRepository) {
         this.regaloRepository = regaloRepository;
     }
 
@@ -40,8 +40,8 @@ public class ListaService implements IListaService{
         listaRepository.deleteById(id);
     }
 
-    public void deleteListaAndRegalos(UUID listaId) {
-        regaloRepository.deleteByListaId(listaId);
-        listaRepository.deleteById(listaId);
+    public void deleteListaAndRegalos(UUID id) {
+        regaloRepository.deleteByListaId(id);
+        listaRepository.deleteById(id);
     }
 }

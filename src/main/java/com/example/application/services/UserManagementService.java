@@ -13,9 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class UserManagementService implements UserDetailsService {
+
+    private static final Logger logger = Logger.getLogger(UserManagementService.class.getName());
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -38,6 +42,10 @@ public class UserManagementService implements UserDetailsService {
             emailService.sendRegistrationEmail(user);
             return true;
         } catch (DataIntegrityViolationException e) {
+            logger.log(Level.SEVERE, "Error de integridad de datos al registrar usuario: " + user.getEmail(), e);
+            return false;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error desconocido al registrar usuario: " + user.getEmail(), e);
             return false;
         }
     }

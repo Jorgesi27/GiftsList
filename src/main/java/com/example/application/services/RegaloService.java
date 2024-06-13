@@ -4,7 +4,6 @@ import com.example.application.domain.Regalo;
 import com.example.application.domain.RegaloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +35,11 @@ public class RegaloService implements IRegaloService{
         regaloRepository.deleteById(id);
     }
 
-    public void deleteByListaId(UUID listaId) {
-        regaloRepository.deleteByListaId(listaId);
+    public void deleteByListaId(UUID id) {
+        regaloRepository.deleteByListaId(id);
+    }
+
+    public List<Regalo> findByListaId(UUID id) {
+        return regaloRepository.findByListaId(id);
     }
 }

@@ -60,4 +60,3 @@ public class EmailRealService implements EmailService {
         return true;
     }
 }
-

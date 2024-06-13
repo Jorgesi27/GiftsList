@@ -36,16 +36,13 @@ public class CrearListaView extends VerticalLayout{
     private final UserManagementService usuarioService;
 
     private TextField listaNombre = new TextField("Nombre de la Lista");
-
     private Select<Allegado> selectAllegado = new Select<>();
     private TextField nombreRegalo = new TextField("Nombre del regalo");
     private TextField precioRegalo = new TextField("Precio del regalo");
     private TextField urlRegalo = new TextField("URL del regalo");
     private Button addRegaloButton = new Button("Agregar Regalo");
-
     private Grid<Regalo> regalosGrid = new Grid<>(Regalo.class);
     private List<Regalo> regalosList = new ArrayList<>();
-
     private Button saveButton = new Button("Guardar Lista");
 
     @Autowired
@@ -136,9 +133,6 @@ public class CrearListaView extends VerticalLayout{
 
         Notification.show("Lista de regalos guardada exitosamente.");
     }
-
-
-
 
     private Usuario obtenerUsuarioAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -23,12 +23,12 @@ public class Lista {
     private UUID id;
 
     @NotBlank
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 64)
     private String nombre;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 15)
+    @Column(name = "estado", nullable = false, length = 16)
     private EstadoLista estado;
 
     @NotNull

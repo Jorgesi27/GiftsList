@@ -29,19 +29,19 @@ public class Usuario implements UserDetails {
     private UUID id;
 
     @NotBlank
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 64)
     private String nombre;
 
     @NotBlank
-    @Column(name = "apellidos", nullable = false, length = 100)
+    @Column(name = "apellidos", nullable = false, length = 128)
     private String apellidos;
 
     @NotBlank
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 128)
     private String email;
 
     @NotBlank
-    @Column(name = "contraseña", nullable = false, length = 50)
+    @Column(name = "contraseña", nullable = false, length = 256)
     private String password;
 
     @NotNull
@@ -54,6 +54,9 @@ public class Usuario implements UserDetails {
 
     @OneToMany(mappedBy = "usuario")
     private Set<Allegado> allegados;
+
+    @OneToMany(mappedBy = "usuario")
+    private Set<Lista> listas;
 
     private String registerCode = "";
 

@@ -20,11 +20,11 @@ public class Allegado {
     private UUID id;
 
     @NotBlank
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 64)
     private String nombre;
 
     @NotBlank
-    @Column(name = "apellidos", nullable = false, length = 100)
+    @Column(name = "apellidos", nullable = false, length = 128)
     private String apellidos;
 
     @ManyToOne

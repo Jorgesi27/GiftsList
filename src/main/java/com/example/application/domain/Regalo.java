@@ -21,17 +21,17 @@ public class Regalo {
     private UUID id;
 
     @NotBlank
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 64)
     private String nombre;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 30)
+    @Column(name = "estado", nullable = false, length = 32)
     private EstadoRegalo estado;
 
     @Column(name = "precio", nullable = true)
     private Double precio;
 
-    @Column(name = "url", nullable = true, length = 250)
+    @Column(name = "url", nullable = true, length = 256)
     private String url;
 
     @ManyToOne
