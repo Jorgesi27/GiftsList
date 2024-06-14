@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serial;
 
-@PageTitle("Activate User")
+@PageTitle("Activación de la Cuenta")
 @Route(value = "useractivation")
-@Component // Required for unit testing
-@Scope("prototype") // Required for IT testing
+@Component
+@Scope("prototype")
 @AnonymousAllowed
 public class ActivationView extends VerticalLayout {
 
@@ -41,7 +41,7 @@ public class ActivationView extends VerticalLayout {
         email = new TextField("Tu email");
         email.setId("email");
 
-        secretCode = new TextField("Tu codigo sécreto");
+        secretCode = new TextField("Tu código secreto");
         secretCode.setId("secretCode");
 
         status = new H4();
@@ -67,12 +67,12 @@ public class ActivationView extends VerticalLayout {
         status.setVisible(true);
 
         if (service.activateUser(email.getValue(), secretCode.getValue())) {
-            status.setText("Congrats. The user has been activated");
-            add(new RouterLink("Log in", MainView.class));
+            status.setText("Enhorabuena! Su cuenta fue activada, esperamos que disfrute de nuestra web.");
+            add(new RouterLink("Inicial Sesión", MainView.class));
 
 
         } else {
-            status.setText("Ups. The user could not be activated");
+            status.setText("Ups. La cuenta no pudo ser activada.");
         }
 
     }
@@ -89,5 +89,4 @@ public class ActivationView extends VerticalLayout {
     public String getStatus() {
         return status.getText();
     }
-
 }

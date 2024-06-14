@@ -76,13 +76,16 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         String idStr = event.getRouteParameters().get("id").orElse(null);
         if (idStr != null) {
             try {
+                // Convert the id to a valid UUID
                 id = UUID.fromString(idStr);
                 cargarDatosLista(id);
             } catch (IllegalArgumentException e) {
                 Notification.show("ID de lista no válido.");
+                event.forwardTo(ListaView.class); // Navigate back to the ListaView in case of invalid ID
             }
         } else {
             Notification.show("ID de lista no proporcionado.");
+            event.forwardTo(ListaView.class); // Navigate back to the ListaView if no ID is provided
         }
     }
 
