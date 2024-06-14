@@ -3,6 +3,7 @@ package com.example.application.presentacion;
 import com.example.application.domain.*;
 import com.example.application.enums.EstadoLista;
 import com.example.application.enums.EstadoRegalo;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.AllegadoService;
 import com.example.application.services.ListaService;
 import com.example.application.services.RegaloService;
@@ -17,23 +18,22 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Route(value = "crear-lista")
 @PageTitle("Crea Lista de Regalos")
-@AnonymousAllowed
+@PermitAll
 public class CrearListaView extends VerticalLayout{
 
     private final AllegadoService allegadoService;
     private final ListaService listaService;
     private final RegaloService regaloService;
     private final UserManagementService usuarioService;
+    private final AuthenticatedUser authenticatedUser;
 
     private TextField listaNombre = new TextField("Nombre de la Lista");
     private Select<Allegado> selectAllegado = new Select<>();
@@ -46,11 +46,12 @@ public class CrearListaView extends VerticalLayout{
     private Button saveButton = new Button("Guardar Lista");
 
     @Autowired
-    public CrearListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, UserManagementService usuarioService) {
+    public CrearListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, UserManagementService usuarioService, AuthenticatedUser authenticatedUser) {
         this.allegadoService = allegadoService;
         this.listaService = listaService;
         this.regaloService = regaloService;
         this.usuarioService = usuarioService;
+        this.authenticatedUser = authenticatedUser;
 
         configureRegalosGrid();
         configureForm();
@@ -65,7 +66,7 @@ public class CrearListaView extends VerticalLayout{
         regalosGrid.addColumn(Regalo::getEstado).setHeader("Estado");
         regalosGrid.addColumn(Regalo::getPrecio).setHeader("Precio");
         regalosGrid.addColumn(Regalo::getUrl).setHeader("URL");
-        regalosGrid.addColumn(regalo -> regalo.getAllegado().getNombre()).setHeader("Allegado");
+        regalosGrid.addColumn(regalo -> regalo.getAllegado() != null ? regalo.getAllegado().getNombre() : "").setHeader("Allegado");
         regalosGrid.setItems(regalosList);
     }
 
@@ -93,8 +94,8 @@ public class CrearListaView extends VerticalLayout{
         regalo.setNombre(nombreRegalo.getValue());
         regalo.setPrecio(precioRegalo.getValue().isEmpty() ? null : Double.valueOf(precioRegalo.getValue()));
         regalo.setUrl(urlRegalo.getValue());
-        regalo.setAllegado(selectAllegado.getValue());
         regalo.setEstado(EstadoRegalo.POR_COMPRAR); // Establecer el estado del regalo como POR_COMPRAR
+        regalo.setAllegado(selectAllegado.getValue()); // Asignar el allegado seleccionado al regalo
 
         regalosList.add(regalo);
         regalosGrid.setItems(regalosList);
@@ -106,15 +107,22 @@ public class CrearListaView extends VerticalLayout{
     }
 
     private void saveLista() {
-        // Verificar que el nombre de la lista no esté vacío
         if (listaNombre.getValue().isEmpty()) {
             Notification.show("El nombre de la lista no puede estar vacío");
             return;
         }
 
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isEmpty()) {
+            Notification.show("No se pudo obtener el usuario autenticado");
+            return;
+        }
+
+        Usuario usuario = optionalUsuario.get();
+
         Lista lista = new Lista();
         lista.setNombre(listaNombre.getValue());
-        lista.setUsuario(obtenerUsuarioAutenticado());
+        lista.setUsuario(usuario); // Asignar el usuario autenticado a la lista
         lista.setEstado(EstadoLista.PENDIENTE); // Establecer el estado de la lista como PENDIENTE
         double costoTotal = regalosList.stream()
                 .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
@@ -132,17 +140,5 @@ public class CrearListaView extends VerticalLayout{
         regalosGrid.setItems(regalosList);
 
         Notification.show("Lista de regalos guardada exitosamente.");
-    }
-
-    private Usuario obtenerUsuarioAutenticado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof UserDetails) {
-                String email = ((UserDetails) principal).getUsername();
-                return usuarioService.loadUserByUsername(email);
-            }
-        }
-        return null;
     }
 }

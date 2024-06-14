@@ -3,6 +3,7 @@ package com.example.application.domain;
 import com.example.application.enums.EstadoRegalo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -34,10 +35,12 @@ public class Regalo {
     @Column(name = "url", nullable = true, length = 256)
     private String url;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "id_allegado")
     private Allegado allegado;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "id_lista")
     private Lista lista;

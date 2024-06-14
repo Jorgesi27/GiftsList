@@ -69,7 +69,7 @@ public class MainLayout extends AppLayout {
         }
 
         if (accessChecker.hasAccess(AllegadoView.class)) {
-            nav.addItem(new SideNavItem("Allegados", AllegadoView.class, LineAwesomeIcon.BOOK_DEAD_SOLID.create()));
+            nav.addItem(new SideNavItem("Gestionar Allegados", AllegadoView.class, LineAwesomeIcon.BOOK_DEAD_SOLID.create()));
         }
 
         if (accessChecker.hasAccess(ListaView.class)) {

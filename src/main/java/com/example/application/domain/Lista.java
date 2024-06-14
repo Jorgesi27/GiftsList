@@ -35,6 +35,7 @@ public class Lista {
     @Column(name = "coste", nullable = false)
     private Double coste = 0.0;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;

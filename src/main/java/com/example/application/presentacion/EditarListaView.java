@@ -8,6 +8,7 @@ import com.example.application.services.AllegadoService;
 import com.example.application.services.ListaService;
 import com.example.application.services.RegaloService;
 import com.example.application.services.UserManagementService;
+import com.example.application.util.SessionStorage;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -19,7 +20,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,15 +31,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Route(value = "editar-lista/:id", layout = MainLayout.class)
+@Route(value = "editar-lista", layout = MainLayout.class)
 @PageTitle("Editar Lista de Regalos")
-@AnonymousAllowed
+@PermitAll
 public class EditarListaView extends VerticalLayout implements BeforeEnterObserver {
 
     private final AllegadoService allegadoService;
     private final ListaService listaService;
     private final RegaloService regaloService;
     private final UserManagementService usuarioService;
+    private final SessionStorage sessionStorage;
 
     private TextField listaNombre = new TextField("Nombre de la Lista");
 
@@ -57,11 +59,12 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
     private Lista lista;
 
     @Autowired
-    public EditarListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, UserManagementService usuarioService) {
+    public EditarListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, UserManagementService usuarioService, SessionStorage sessionStorage) {
         this.allegadoService = allegadoService;
         this.listaService = listaService;
         this.regaloService = regaloService;
         this.usuarioService = usuarioService;
+        this.sessionStorage = sessionStorage;
 
         configureRegalosGrid();
         configureForm();
@@ -73,19 +76,18 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        String idStr = event.getRouteParameters().get("id").orElse(null);
+        String idStr = sessionStorage.getSelectedListaId();
         if (idStr != null) {
             try {
-                // Convert the id to a valid UUID
                 id = UUID.fromString(idStr);
                 cargarDatosLista(id);
             } catch (IllegalArgumentException e) {
                 Notification.show("ID de lista no válido.");
-                event.forwardTo(ListaView.class); // Navigate back to the ListaView in case of invalid ID
+                event.forwardTo(ListaView.class);
             }
         } else {
             Notification.show("ID de lista no proporcionado.");
-            event.forwardTo(ListaView.class); // Navigate back to the ListaView if no ID is provided
+            event.forwardTo(ListaView.class);
         }
     }
 
@@ -164,7 +166,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         regalo.setPrecio(precioRegalo.getValue().isEmpty() ? null : Double.valueOf(precioRegalo.getValue()));
         regalo.setUrl(urlRegalo.getValue());
         regalo.setAllegado(selectAllegado.getValue());
-        regalo.setEstado(EstadoRegalo.POR_COMPRAR); // Establecer el estado del regalo como POR_COMPRAR
+        regalo.setEstado(EstadoRegalo.POR_COMPRAR);
 
         regalosList.add(regalo);
         regalosGrid.setItems(regalosList);
@@ -181,7 +183,6 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
-        // Verificar que el nombre de la lista no esté vacío
         if (listaNombre.getValue().isEmpty()) {
             Notification.show("El nombre de la lista no puede estar vacío");
             return;
@@ -189,18 +190,15 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
 
         lista.setNombre(listaNombre.getValue());
         lista.setUsuario(obtenerUsuarioAutenticado());
-        lista.setEstado(EstadoLista.PENDIENTE); // Establecer el estado de la lista como PENDIENTE
+        lista.setEstado(EstadoLista.PENDIENTE);
 
-        // Calcular el costo total de los regalos
         double costoTotal = regalosList.stream()
                 .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
                 .sum();
         lista.setCoste(costoTotal);
 
-        // Guardar la lista actualizada
         lista = listaService.save(lista);
 
-        // Asignar la lista a cada regalo y guardarlos
         for (Regalo regalo : regalosList) {
             regalo.setLista(lista);
             regaloService.save(regalo);

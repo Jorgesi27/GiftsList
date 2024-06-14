@@ -1,6 +1,8 @@
 package com.example.application.presentacion;
 
 import com.example.application.domain.Allegado;
+import com.example.application.domain.Usuario;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.AllegadoService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -10,15 +12,19 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
 
 @Route(value = "allegados")
 @PageTitle("Gestionar Allegados")
-@AnonymousAllowed
+@PermitAll
 public class AllegadoView extends VerticalLayout {
 
-    private AllegadoService allegadoService;
+    private final AllegadoService allegadoService;
+    private final AuthenticatedUser authenticatedUser;
+
     private Grid<Allegado> grid = new Grid<>(Allegado.class);
     private TextField nombre = new TextField("Nombre");
     private TextField apellidos = new TextField("Apellidos");
@@ -26,12 +32,12 @@ public class AllegadoView extends VerticalLayout {
     private Button deleteButton = new Button("Borrar");
 
     @Autowired
-    public AllegadoView(AllegadoService allegadoService){
-
+    public AllegadoView(AllegadoService allegadoService, AuthenticatedUser authenticatedUser) {
         this.allegadoService = allegadoService;
+        this.authenticatedUser = authenticatedUser;
 
         grid.setColumns("nombre", "apellidos");
-        grid.setItems(allegadoService.findAll());
+        refreshGrid();
 
         FormLayout formLayout = new FormLayout();
         formLayout.add(nombre, apellidos, saveButton, deleteButton);
@@ -48,32 +54,53 @@ public class AllegadoView extends VerticalLayout {
         });
     }
 
-    private void saveAllegado(){
-        Allegado allegado = new Allegado();
-        allegado.setNombre(nombre.getValue());
-        allegado.setApellidos(apellidos.getValue());
-        allegadoService.save(allegado);
-        refreshGrid();
-        cleanForm();
+    private void saveAllegado() {
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isPresent()) {
+            Usuario usuarioLogueado = optionalUsuario.get();
+
+            // Crear una nueva instancia de Allegado y establecer los valores desde los campos de texto
+            Allegado allegado = new Allegado();
+            allegado.setNombre(nombre.getValue());
+            allegado.setApellidos(apellidos.getValue());
+            allegado.setUsuario(usuarioLogueado);
+
+            // Guardar el nuevo allegado utilizando el servicio
+            allegadoService.save(allegado);
+
+            // Actualizar y limpiar la interfaz gráfica
+            refreshGrid();
+            cleanForm();
+        } else {
+            System.err.println("No se pudo obtener el usuario logueado para guardar el allegado.");
+        }
     }
 
-    private void deleteAllegado(){
+    private void deleteAllegado() {
         Allegado selected = grid.asSingleSelect().getValue();
-        if (selected != null){
+        if (selected != null) {
             allegadoService.deleteById(selected.getId());
             refreshGrid();
             cleanForm();
         }
     }
 
-    private void refreshGrid(){ grid.setItems(allegadoService.findAll()); }
+    private void refreshGrid() {
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isPresent()) {
+            Usuario usuarioLogueado = optionalUsuario.get();
+            grid.setItems(allegadoService.findAllByUsuario(usuarioLogueado));
+        } else {
+            System.err.println("No se pudo obtener el usuario logueado para refrescar el grid.");
+        }
+    }
 
-    private void cleanForm(){
+    private void cleanForm() {
         nombre.clear();
         apellidos.clear();
     }
 
-    private void populateForm(Allegado allegado){
+    private void populateForm(Allegado allegado) {
         nombre.setValue(allegado.getNombre());
         apellidos.setValue(allegado.getApellidos());
     }
