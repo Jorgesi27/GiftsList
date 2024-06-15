@@ -68,7 +68,7 @@ public class ActivationView extends VerticalLayout {
 
         if (service.activateUser(email.getValue(), secretCode.getValue())) {
             status.setText("Enhorabuena! Su cuenta fue activada, esperamos que disfrute de nuestra web.");
-            add(new RouterLink("Inicial Sesión", MainView.class));
+            add(new RouterLink("Iniciar Sesión", MainView.class));
 
 
         } else {

@@ -1,15 +1,8 @@
 package com.example.application.presentacion;
 
-import com.example.application.domain.Usuario;
 import com.example.application.security.AuthenticatedUser;
-import com.example.application.services.UserManagementService;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -17,13 +10,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
 
 @AnonymousAllowed
-@PageTitle("Login")
+@PageTitle("Iniciar Sesión")
 @Route(value = "login")
 public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
@@ -35,8 +24,8 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
-        i18n.getHeader().setTitle("My App");
-        i18n.getHeader().setDescription("Login using admin/admin or with any other credentials");
+        i18n.getHeader().setTitle("Gifts List IW");
+        i18n.getHeader().setDescription("Inicia sesión usando tu email y contraseña.");
         i18n.setAdditionalInformation(null);
         setI18n(i18n);
 
@@ -50,7 +39,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         if (authenticatedUser.get().isPresent()) {
             // Already logged in
             setOpened(false);
-            event.forwardTo("home");
+            event.forwardTo("");
         }
 
         setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));

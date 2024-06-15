@@ -12,4 +12,5 @@ public interface IListaService {
     List<Lista> findAll();
     void deleteById(UUID id);
     void deleteListaAndRegalos(UUID id);
+    List<Lista> findAllByUsuario();
 }

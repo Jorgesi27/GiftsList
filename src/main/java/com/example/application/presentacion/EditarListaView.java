@@ -1,14 +1,16 @@
 package com.example.application.presentacion;
 
 import com.example.application.MainLayout;
-import com.example.application.domain.*;
+import com.example.application.domain.Allegado;
+import com.example.application.domain.Lista;
+import com.example.application.domain.Regalo;
+import com.example.application.domain.Usuario;
 import com.example.application.enums.EstadoLista;
 import com.example.application.enums.EstadoRegalo;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.AllegadoService;
 import com.example.application.services.ListaService;
 import com.example.application.services.RegaloService;
-import com.example.application.services.UserManagementService;
-import com.example.application.util.SessionStorage;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -22,16 +24,13 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Route(value = "editar-lista", layout = MainLayout.class)
+@Route(value = "editar-lista/:id", layout = MainLayout.class)
 @PageTitle("Editar Lista de Regalos")
 @PermitAll
 public class EditarListaView extends VerticalLayout implements BeforeEnterObserver {
@@ -39,8 +38,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
     private final AllegadoService allegadoService;
     private final ListaService listaService;
     private final RegaloService regaloService;
-    private final UserManagementService usuarioService;
-    private final SessionStorage sessionStorage;
+    private final AuthenticatedUser authenticatedUser;
 
     private TextField listaNombre = new TextField("Nombre de la Lista");
 
@@ -59,12 +57,11 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
     private Lista lista;
 
     @Autowired
-    public EditarListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, UserManagementService usuarioService, SessionStorage sessionStorage) {
+    public EditarListaView(AllegadoService allegadoService, ListaService listaService, RegaloService regaloService, AuthenticatedUser authenticatedUser) {
         this.allegadoService = allegadoService;
         this.listaService = listaService;
         this.regaloService = regaloService;
-        this.usuarioService = usuarioService;
-        this.sessionStorage = sessionStorage;
+        this.authenticatedUser = authenticatedUser;
 
         configureRegalosGrid();
         configureForm();
@@ -76,10 +73,10 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        String idStr = sessionStorage.getSelectedListaId();
-        if (idStr != null) {
+        Optional<String> idParameter = event.getRouteParameters().get("id");
+        if (idParameter.isPresent()) {
             try {
-                id = UUID.fromString(idStr);
+                id = UUID.fromString(idParameter.get());
                 cargarDatosLista(id);
             } catch (IllegalArgumentException e) {
                 Notification.show("ID de lista no válido.");
@@ -95,11 +92,20 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         Optional<Lista> optionalLista = listaService.findById(id);
         if (optionalLista.isPresent()) {
             lista = optionalLista.get();
+
+            Optional<Usuario> optionalUsuario = authenticatedUser.get();
+            if (optionalUsuario.isEmpty() || !lista.getUsuario().equals(optionalUsuario.get())) {
+                Notification.show("No tiene permisos para editar esta lista.");
+                getUI().ifPresent(ui -> ui.navigate(ListaView.class));
+                return;
+            }
+
             listaNombre.setValue(lista.getNombre());
             regalosList = regaloService.findByListaId(id);
             regalosGrid.setItems(regalosList);
         } else {
             Notification.show("Lista no encontrada.");
+            getUI().ifPresent(ui -> ui.navigate(ListaView.class));
         }
     }
 
@@ -119,6 +125,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         nombreColumn.setEditorComponent(nombreField);
 
         Select<EstadoRegalo> estadoField = new Select<>();
+        estadoField.setItems(EstadoRegalo.values());
         binder.forField(estadoField).bind(Regalo::getEstado, Regalo::setEstado);
         estadoColumn.setEditorComponent(estadoField);
 
@@ -188,6 +195,14 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
+        // Verificar que el usuario autenticado sea el propietario de la lista
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isEmpty() || !lista.getUsuario().equals(optionalUsuario.get())) {
+            Notification.show("No tiene permisos para editar esta lista.");
+            getUI().ifPresent(ui -> ui.navigate(ListaView.class));
+            return;
+        }
+
         lista.setNombre(listaNombre.getValue());
         lista.setUsuario(obtenerUsuarioAutenticado());
         lista.setEstado(EstadoLista.PENDIENTE);
@@ -208,14 +223,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private Usuario obtenerUsuarioAutenticado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof UserDetails) {
-                String email = ((UserDetails) principal).getUsername();
-                return usuarioService.loadUserByUsername(email);
-            }
-        }
-        return null;
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        return optionalUsuario.orElse(null);
     }
 }

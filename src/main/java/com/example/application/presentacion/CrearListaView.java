@@ -1,5 +1,6 @@
 package com.example.application.presentacion;
 
+import com.example.application.MainLayout;
 import com.example.application.domain.*;
 import com.example.application.enums.EstadoLista;
 import com.example.application.enums.EstadoRegalo;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Route(value = "crear-lista")
+@Route(value = "crear-lista", layout = MainLayout.class)
 @PageTitle("Crea Lista de Regalos")
 @PermitAll
 public class CrearListaView extends VerticalLayout{
@@ -62,20 +63,39 @@ public class CrearListaView extends VerticalLayout{
     }
 
     private void configureRegalosGrid() {
+        regalosGrid.removeAllColumns();
+
         regalosGrid.addColumn(Regalo::getNombre).setHeader("Nombre del Regalo");
-        regalosGrid.addColumn(Regalo::getEstado).setHeader("Estado");
+        regalosGrid.addColumn(regalo -> {
+            Allegado allegado = regalo.getAllegado();
+            return allegado != null ? allegado.getNombre() + " " + allegado.getApellidos() : "";
+        }).setHeader("Allegado");
         regalosGrid.addColumn(Regalo::getPrecio).setHeader("Precio");
         regalosGrid.addColumn(Regalo::getUrl).setHeader("URL");
-        regalosGrid.addColumn(regalo -> regalo.getAllegado() != null ? regalo.getAllegado().getNombre() : "").setHeader("Allegado");
+        regalosGrid.addColumn(Regalo::getEstado).setHeader("Estado");
+
         regalosGrid.setItems(regalosList);
     }
 
     private void configureForm() {
         selectAllegado.setLabel("Selecciona un Allegado");
-        selectAllegado.setItems(allegadoService.findAll());
+        refreshSelectAllegado();
+
         selectAllegado.setItemLabelGenerator(Allegado::getNombre);
 
         addRegaloButton.addClickListener(e -> addRegalo());
+    }
+
+    private void refreshSelectAllegado() {
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isPresent()) {
+            Usuario usuarioLogueado = optionalUsuario.get();
+            List<Allegado> allegadosUsuario = allegadoService.findAllByUsuario(usuarioLogueado);
+            selectAllegado.setItems(allegadosUsuario);
+        } else {
+            selectAllegado.setItems();
+            System.err.println("No se pudo obtener el usuario logueado para refrescar el select de allegados.");
+        }
     }
 
     private FormLayout createFormLayout() {
@@ -85,8 +105,8 @@ public class CrearListaView extends VerticalLayout{
     }
 
     private void addRegalo() {
-        if (selectAllegado.getValue() == null) {
-            Notification.show("Selecciona un allegado");
+        if (selectAllegado.getValue() == null || !isAllegadoUsuario(selectAllegado.getValue())) {
+            Notification.show("Selecciona un allegado válido");
             return;
         }
 
@@ -94,8 +114,8 @@ public class CrearListaView extends VerticalLayout{
         regalo.setNombre(nombreRegalo.getValue());
         regalo.setPrecio(precioRegalo.getValue().isEmpty() ? null : Double.valueOf(precioRegalo.getValue()));
         regalo.setUrl(urlRegalo.getValue());
-        regalo.setEstado(EstadoRegalo.POR_COMPRAR); // Establecer el estado del regalo como POR_COMPRAR
-        regalo.setAllegado(selectAllegado.getValue()); // Asignar el allegado seleccionado al regalo
+        regalo.setEstado(EstadoRegalo.POR_COMPRAR);
+        regalo.setAllegado(selectAllegado.getValue());
 
         regalosList.add(regalo);
         regalosGrid.setItems(regalosList);
@@ -104,6 +124,15 @@ public class CrearListaView extends VerticalLayout{
         precioRegalo.clear();
         urlRegalo.clear();
         selectAllegado.clear();
+    }
+
+    private boolean isAllegadoUsuario(Allegado allegado) {
+        Optional<Usuario> optionalUsuario = authenticatedUser.get();
+        if (optionalUsuario.isPresent()) {
+            Usuario usuarioLogueado = optionalUsuario.get();
+            return allegado.getUsuario().equals(usuarioLogueado);
+        }
+        return false;
     }
 
     private void saveLista() {
@@ -122,17 +151,18 @@ public class CrearListaView extends VerticalLayout{
 
         Lista lista = new Lista();
         lista.setNombre(listaNombre.getValue());
-        lista.setUsuario(usuario); // Asignar el usuario autenticado a la lista
-        lista.setEstado(EstadoLista.PENDIENTE); // Establecer el estado de la lista como PENDIENTE
+        lista.setUsuario(usuario);
+        lista.setEstado(EstadoLista.PENDIENTE);
+
         double costoTotal = regalosList.stream()
                 .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
                 .sum();
         lista.setCoste(costoTotal);
-        lista = listaService.save(lista); // Guardar la lista y obtener el objeto actualizado
+        lista = listaService.save(lista);
 
         for (Regalo regalo : regalosList) {
-            regalo.setLista(lista); // Asignar la lista al regalo
-            regaloService.save(regalo); // Guardar el regalo
+            regalo.setLista(lista);
+            regaloService.save(regalo);
         }
 
         listaNombre.clear();

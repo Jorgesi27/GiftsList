@@ -28,7 +28,6 @@ public class AllegadoService implements IAllegadoService{
     @Override
     @Transactional
     public Allegado save(Allegado allegado) {
-        // Obtener el usuario logueado
         Optional<Usuario> optionalUsuario = authenticatedUser.get();
         if (optionalUsuario.isPresent()) {
             Usuario usuarioLogueado = optionalUsuario.get();

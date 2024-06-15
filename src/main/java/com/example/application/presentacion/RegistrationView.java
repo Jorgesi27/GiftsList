@@ -14,9 +14,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-
 import java.io.Serial;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @PageTitle("Registrate User")
@@ -86,10 +84,8 @@ public class RegistrationView extends VerticalLayout {
      */
     public void onRegisterButtonClick() {
         if (binder.validate().isOk() && password.getValue().equals(password2.getValue())) {
-            Notification.show("Registrando usuario...");
             try {
                 if (service.registerUser(binder.getBean())) {
-                    Notification.show("Registro exitoso. Por favor, revise su email.");
                     status.setText("Genial!, Por favor revise su email.");
                     status.setVisible(true);
                     binder.setBean(new Usuario());
@@ -98,7 +94,6 @@ public class RegistrationView extends VerticalLayout {
                     Notification.show("El email ya está en uso o hubo un error al registrar.");
                 }
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error al registrar usuario: ", e);
                 Notification.show("Error al registrar usuario: " + e.getMessage());
             }
         } else {

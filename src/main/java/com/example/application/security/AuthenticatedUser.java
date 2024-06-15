@@ -3,8 +3,6 @@ package com.example.application.security;
 import com.example.application.domain.Usuario;
 import com.example.application.domain.UsuarioRepository;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +21,15 @@ public class AuthenticatedUser {
 
     @Transactional
     public Optional<Usuario> get() {
-        return authenticationContext.getAuthenticatedUser(Usuario.class)
-                .map(userDetails -> userRepository.findByEmail(userDetails.getUsername()).get());
+        Optional<Usuario> authenticatedUser = authenticationContext.getAuthenticatedUser(Usuario.class)
+                .flatMap(userDetails -> userRepository.findByEmail(userDetails.getUsername()));
 
+        return authenticatedUser;
+    }
 
+    @Transactional
+    public String getUsername() {
+        return get().map(Usuario::getNombre).orElseThrow(() -> new IllegalStateException("No user logged in"));
     }
 
     public void logout() {

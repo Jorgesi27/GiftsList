@@ -1,5 +1,6 @@
 package com.example.application.presentacion;
 
+import com.example.application.MainLayout;
 import com.example.application.domain.Allegado;
 import com.example.application.domain.Usuario;
 import com.example.application.security.AuthenticatedUser;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-@Route(value = "allegados")
+@Route(value = "allegados", layout = MainLayout.class)
 @PageTitle("Gestionar Allegados")
 @PermitAll
 public class AllegadoView extends VerticalLayout {
@@ -50,6 +51,8 @@ public class AllegadoView extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 populateForm(event.getValue());
+            } else {
+                cleanForm();
             }
         });
     }
@@ -59,16 +62,18 @@ public class AllegadoView extends VerticalLayout {
         if (optionalUsuario.isPresent()) {
             Usuario usuarioLogueado = optionalUsuario.get();
 
-            // Crear una nueva instancia de Allegado y establecer los valores desde los campos de texto
-            Allegado allegado = new Allegado();
+            Allegado allegado = grid.asSingleSelect().getValue();
+
+            if (allegado == null) {
+                allegado = new Allegado();
+                allegado.setUsuario(usuarioLogueado);
+            }
+
             allegado.setNombre(nombre.getValue());
             allegado.setApellidos(apellidos.getValue());
-            allegado.setUsuario(usuarioLogueado);
 
-            // Guardar el nuevo allegado utilizando el servicio
             allegadoService.save(allegado);
 
-            // Actualizar y limpiar la interfaz gráfica
             refreshGrid();
             cleanForm();
         } else {
@@ -91,6 +96,7 @@ public class AllegadoView extends VerticalLayout {
             Usuario usuarioLogueado = optionalUsuario.get();
             grid.setItems(allegadoService.findAllByUsuario(usuarioLogueado));
         } else {
+            grid.setItems();
             System.err.println("No se pudo obtener el usuario logueado para refrescar el grid.");
         }
     }
@@ -101,6 +107,7 @@ public class AllegadoView extends VerticalLayout {
     }
 
     private void populateForm(Allegado allegado) {
+        grid.select(allegado);
         nombre.setValue(allegado.getNombre());
         apellidos.setValue(allegado.getApellidos());
     }

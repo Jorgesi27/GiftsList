@@ -1,29 +1,33 @@
 package com.example.application.views.main;
 
 import com.example.application.MainLayout;
-import com.example.application.presentacion.AllegadoView;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.example.application.security.AuthenticatedUser;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PageTitle("Home")
-@Route(value = "home", layout = MainLayout.class)
+@Route(value = "", layout = MainLayout.class)
 @PermitAll
-public class MainView extends HorizontalLayout {
+public class MainView extends VerticalLayout {
 
-    private Button allegadoView;
+    private final AuthenticatedUser authenticatedUser;
 
-    public MainView() {
+    @Autowired
+    public MainView(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
 
-        allegadoView = new Button("Gestionar Allegados", e -> {
-            getUI().ifPresent(ui -> ui.navigate(AllegadoView.class));
-        });
+        String name = authenticatedUser.getUsername();
+        H1 welcomeMessage = new H1("Bienvenido a Gifts List IW, " + name);
+        Image image = new Image("images/96rs_whs7_230503.jpg", "Imagen de regalo");
+        image.setWidth("300px");
 
+        setAlignItems(Alignment.CENTER);
+        add(welcomeMessage, image);
         setMargin(true);
-
-        add(allegadoView);
     }
-
 }
