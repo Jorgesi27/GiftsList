@@ -7,8 +7,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 @AnonymousAllowed
@@ -20,19 +18,27 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
     public LoginView(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
-        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
+
+        setAction("/login");
 
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("Gifts List IW");
-        i18n.getHeader().setDescription("Inicia sesión usando tu email y contraseña.");
-        i18n.setAdditionalInformation(null);
+        i18n.getHeader().setDescription("Inicie sesión usando email y contraseña.");
+
+        LoginI18n.Form i18nForm = i18n.getForm();
+        i18nForm.setUsername("Email");
+        i18nForm.setForgotPassword("¿No tienes cuenta todavía?");
+        i18n.setForm(i18nForm);
+
         setI18n(i18n);
-
-        setForgotPasswordButtonVisible(false);
+        setForgotPasswordButtonVisible(true);
         setOpened(true);
-    }
 
+        addForgotPasswordListener(event -> {
+            getUI().ifPresent(ui -> ui.navigate("userregistration"));
+        });
+    }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {

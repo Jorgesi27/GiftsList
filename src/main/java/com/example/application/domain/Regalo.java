@@ -17,9 +17,8 @@ import java.util.UUID;
 public class Regalo {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(SqlTypes.CHAR)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
     @Column(name = "nombre", nullable = false, length = 64)
@@ -37,11 +36,11 @@ public class Regalo {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "id_allegado")
+    @JoinColumn(name = "id_allegado", nullable = false)
     private Allegado allegado;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "id_lista")
+    @JoinColumn(name = "id_lista", nullable = false)
     private Lista lista;
 }

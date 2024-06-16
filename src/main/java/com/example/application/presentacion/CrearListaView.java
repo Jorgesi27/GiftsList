@@ -110,9 +110,27 @@ public class CrearListaView extends VerticalLayout{
             return;
         }
 
+        String nombre = nombreRegalo.getValue();
+        String precioStr = precioRegalo.getValue();
+
+        if (nombre.isEmpty()) {
+            Notification.show("El nombre del regalo no puede estar vacío");
+            return;
+        }
+
+        Double precio = null;
+        try {
+            if (!precioStr.isEmpty()) {
+                precio = Double.valueOf(precioStr);
+            }
+        } catch (NumberFormatException e) {
+            Notification.show("El precio debe ser un número válido");
+            return;
+        }
+
         Regalo regalo = new Regalo();
-        regalo.setNombre(nombreRegalo.getValue());
-        regalo.setPrecio(precioRegalo.getValue().isEmpty() ? null : Double.valueOf(precioRegalo.getValue()));
+        regalo.setNombre(nombre);
+        regalo.setPrecio(precio);
         regalo.setUrl(urlRegalo.getValue());
         regalo.setEstado(EstadoRegalo.POR_COMPRAR);
         regalo.setAllegado(selectAllegado.getValue());
@@ -170,5 +188,6 @@ public class CrearListaView extends VerticalLayout{
         regalosGrid.setItems(regalosList);
 
         Notification.show("Lista de regalos guardada exitosamente.");
+        getUI().ifPresent(ui -> ui.navigate(ListaView.class));
     }
 }

@@ -14,6 +14,8 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 @Route(value = "listas-regalos", layout = MainLayout.class)
 @PageTitle("Listas de Regalos")
 @PermitAll
@@ -48,6 +50,10 @@ public class ListaView extends VerticalLayout {
     }
 
     private void refreshGridData() {
-        grid.setItems(listaService.findAllByUsuario());
+        // Obtener el usuario autenticado
+        authenticatedUser.get().ifPresent(usuario -> {
+            List<Lista> listas = listaService.findAllByUsuario(usuario);
+            grid.setItems(listas);
+        });
     }
 }

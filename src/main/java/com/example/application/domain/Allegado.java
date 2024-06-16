@@ -16,9 +16,8 @@ import java.util.UUID;
 public class Allegado {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(SqlTypes.CHAR)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
     @Column(name = "nombre", nullable = false, length = 64)

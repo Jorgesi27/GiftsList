@@ -26,7 +26,6 @@ public class AllegadoService implements IAllegadoService{
     }
 
     @Override
-    @Transactional
     public Allegado save(Allegado allegado) {
         Optional<Usuario> optionalUsuario = authenticatedUser.get();
         if (optionalUsuario.isPresent()) {
@@ -39,7 +38,7 @@ public class AllegadoService implements IAllegadoService{
     }
 
     @Override
-    public Optional<Allegado> findById(UUID id) {
+    public Optional<Allegado> findById(Long id) {
         return allegadoRepository.findById(id);
     }
 
@@ -49,7 +48,7 @@ public class AllegadoService implements IAllegadoService{
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         allegadoRepository.deleteById(id);
     }
 

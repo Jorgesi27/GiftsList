@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ListaRepository extends JpaRepository<Lista, UUID> {
-    void deleteById(UUID id);
-    Optional<Lista> findById(UUID id);
+public interface ListaRepository extends JpaRepository<Lista, Long> {
+    void deleteById(Long id);
+    Optional<Lista> findById(Long id);
     List<Lista> findByUsuario(Usuario usuario);
+    Optional<Lista> findByNombreAndUsuario(String nombre, Usuario usuario);
 }

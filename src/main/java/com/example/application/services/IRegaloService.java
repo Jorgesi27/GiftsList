@@ -8,9 +8,10 @@ import java.util.UUID;
 public interface IRegaloService {
 
     Regalo save(Regalo regalo);
-    Optional<Regalo> findById(UUID id);
+    Optional<Regalo> findById(Long id);
     List<Regalo> findAll();
-    void deleteById(UUID id);
-    void deleteByListaId(UUID id);
-    List<Regalo> findByListaId(UUID id);
+    void deleteById(Long id);
+    void deleteByListaId(Long listaId);
+    List<Regalo> findByListaId(Long listaId);
+    boolean hasRegalos(Long allegadoId);
 }

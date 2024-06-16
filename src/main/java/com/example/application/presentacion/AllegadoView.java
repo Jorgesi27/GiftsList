@@ -5,10 +5,12 @@ import com.example.application.domain.Allegado;
 import com.example.application.domain.Usuario;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.AllegadoService;
+import com.example.application.services.RegaloService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class AllegadoView extends VerticalLayout {
 
     private final AllegadoService allegadoService;
+    private final RegaloService regaloService;
     private final AuthenticatedUser authenticatedUser;
 
     private Grid<Allegado> grid = new Grid<>(Allegado.class);
@@ -33,8 +36,9 @@ public class AllegadoView extends VerticalLayout {
     private Button deleteButton = new Button("Borrar");
 
     @Autowired
-    public AllegadoView(AllegadoService allegadoService, AuthenticatedUser authenticatedUser) {
+    public AllegadoView(AllegadoService allegadoService, RegaloService regaloService, AuthenticatedUser authenticatedUser) {
         this.allegadoService = allegadoService;
+        this.regaloService = regaloService;
         this.authenticatedUser = authenticatedUser;
 
         grid.setColumns("nombre", "apellidos");
@@ -84,9 +88,13 @@ public class AllegadoView extends VerticalLayout {
     private void deleteAllegado() {
         Allegado selected = grid.asSingleSelect().getValue();
         if (selected != null) {
-            allegadoService.deleteById(selected.getId());
-            refreshGrid();
-            cleanForm();
+            if (regaloService.hasRegalos(selected.getId())) {
+                Notification.show("Primero debe eliminar los regalos asignados a este allegado.");
+            } else {
+                allegadoService.deleteById(selected.getId());
+                refreshGrid();
+                cleanForm();
+            }
         }
     }
 

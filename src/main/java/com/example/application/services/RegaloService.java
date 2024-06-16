@@ -17,38 +17,37 @@ public class RegaloService implements IRegaloService{
     private RegaloRepository regaloRepository;
 
     @Override
-    @Transactional
     public Regalo save(Regalo regalo) {
         return regaloRepository.save(regalo);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Regalo> findById(UUID id) {
+    public Optional<Regalo> findById(Long id) {
         return regaloRepository.findById(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Regalo> findAll() {
         return regaloRepository.findAll();
     }
 
     @Override
-    @Transactional
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         regaloRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
-    public void deleteByListaId(UUID id) {
-        regaloRepository.deleteByListaId(id);
+    public void deleteByListaId(Long listaId) {
+        regaloRepository.deleteByListaId(listaId);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Regalo> findByListaId(UUID id) {
-        return regaloRepository.findByListaId(id);
+    public List<Regalo> findByListaId(Long listaId) {
+        return regaloRepository.findByListaId(listaId);
+    }
+
+    public boolean hasRegalos(Long allegado) {
+        List<Regalo> regalos = regaloRepository.findByAllegadoId(allegado);
+        return !regalos.isEmpty();
     }
 }

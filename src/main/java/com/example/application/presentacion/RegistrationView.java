@@ -17,9 +17,9 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import java.io.Serial;
 import java.util.logging.Logger;
 
+@AnonymousAllowed
 @PageTitle("Registrate User")
 @Route(value = "userregistration")
-@AnonymousAllowed
 public class RegistrationView extends VerticalLayout {
 
     @Serial
@@ -42,6 +42,8 @@ public class RegistrationView extends VerticalLayout {
 
     public RegistrationView(UserManagementService service) {
         this.service = service;
+
+        setAlignItems(Alignment.CENTER);
 
         title = new H1("Registro de Usuario");
 

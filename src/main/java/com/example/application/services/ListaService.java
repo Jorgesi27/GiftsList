@@ -1,9 +1,6 @@
 package com.example.application.services;
 
-import com.example.application.domain.Lista;
-import com.example.application.domain.ListaRepository;
-import com.example.application.domain.RegaloRepository;
-import com.example.application.domain.Usuario;
+import com.example.application.domain.*;
 import com.example.application.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,42 +24,47 @@ public class ListaService implements IListaService{
         this.authenticatedUser = authenticatedUser;
     }
 
-    @Transactional
+    @Override
     public Lista save(Lista lista) {
-
         Usuario usuario = authenticatedUser.get().orElseThrow(() -> new IllegalStateException("No se encontró ningún usuario logueado."));
+
+        Optional<Lista> existingLista = listaRepository.findByNombreAndUsuario(lista.getNombre(), usuario);
+        if (existingLista.isPresent() && !existingLista.get().getId().equals(lista.getId())) {
+            throw new IllegalArgumentException("Ya existe una lista con el mismo nombre para este usuario.");
+        }
+
         lista.setUsuario(usuario);
         return listaRepository.save(lista);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Lista> findById(UUID id) {
+    public Optional<Lista> findByNombreAndUsuario(String nombreLista, Usuario usuario) {
+        return listaRepository.findByNombreAndUsuario(nombreLista, usuario);
+    }
+
+    @Override
+    public Optional<Lista> findById(Long id) {
         return listaRepository.findById(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Lista> findAll() {
         return listaRepository.findAll();
     }
 
     @Override
-    @Transactional
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         listaRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
-    public void deleteListaAndRegalos(UUID id) {
+    public void deleteListaAndRegalos(Long id) {
         regaloRepository.deleteByListaId(id);
         listaRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
-    public List<Lista> findAllByUsuario() {
-        Usuario usuario = authenticatedUser.get().orElseThrow(() -> new IllegalStateException("No se encontró ningún usuario logueado."));
+    @Override
+    public List<Lista> findAllByUsuario(Usuario usuario) {
         return listaRepository.findByUsuario(usuario);
     }
 }

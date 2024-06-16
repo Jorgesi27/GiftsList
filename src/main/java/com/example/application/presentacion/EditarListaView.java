@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Route(value = "editar-lista/:id", layout = MainLayout.class)
 @PageTitle("Editar Lista de Regalos")
@@ -53,7 +52,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
 
     private Button saveButton = new Button("Guardar Cambios");
 
-    private UUID id;
+    private Long id;
     private Lista lista;
 
     @Autowired
@@ -76,7 +75,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         Optional<String> idParameter = event.getRouteParameters().get("id");
         if (idParameter.isPresent()) {
             try {
-                id = UUID.fromString(idParameter.get());
+                id = Long.valueOf(idParameter.get());
                 cargarDatosLista(id);
             } catch (IllegalArgumentException e) {
                 Notification.show("ID de lista no válido.");
@@ -88,7 +87,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         }
     }
 
-    private void cargarDatosLista(UUID id) {
+    private void cargarDatosLista(Long id) {
         Optional<Lista> optionalLista = listaService.findById(id);
         if (optionalLista.isPresent()) {
             lista = optionalLista.get();
@@ -101,7 +100,10 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             }
 
             listaNombre.setValue(lista.getNombre());
-            regalosList = regaloService.findByListaId(id);
+
+            // Cargar todos los regalos de la lista
+            regalosList.clear(); // Limpiar la lista actual de regalos
+            regalosList.addAll(regaloService.findByListaId(id));
             regalosGrid.setItems(regalosList);
         } else {
             Notification.show("Lista no encontrada.");
@@ -114,37 +116,50 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         Editor<Regalo> editor = regalosGrid.getEditor();
         editor.setBinder(binder);
 
-        Grid.Column<Regalo> nombreColumn = regalosGrid.addColumn(Regalo::getNombre).setHeader("Nombre del Regalo");
-        Grid.Column<Regalo> estadoColumn = regalosGrid.addColumn(Regalo::getEstado).setHeader("Estado");
-        Grid.Column<Regalo> precioColumn = regalosGrid.addColumn(Regalo::getPrecio).setHeader("Precio");
-        Grid.Column<Regalo> urlColumn = regalosGrid.addColumn(Regalo::getUrl).setHeader("URL");
-        Grid.Column<Regalo> allegadoColumn = regalosGrid.addColumn(regalo -> regalo.getAllegado().getNombre()).setHeader("Allegado");
+        // Eliminar todas las columnas generadas automáticamente
+        regalosGrid.removeAllColumns();
 
-        TextField nombreField = new TextField();
-        binder.forField(nombreField).bind(Regalo::getNombre, Regalo::setNombre);
-        nombreColumn.setEditorComponent(nombreField);
+        // Agregar columnas personalizadas para mostrar todos los datos del regalo
+        Grid.Column<Regalo> nombreColumn = regalosGrid.addColumn(Regalo::getNombre)
+                .setHeader("Nombre del Regalo");
+        Grid.Column<Regalo> allegadoColumn = regalosGrid.addColumn(regalo -> regalo.getAllegado() != null ? regalo.getAllegado().getNombre() : "")
+                .setHeader("Allegado");
+        Grid.Column<Regalo> precioColumn = regalosGrid.addColumn(Regalo::getPrecio)
+                .setHeader("Precio");
+        Grid.Column<Regalo> urlColumn = regalosGrid.addColumn(Regalo::getUrl)
+                .setHeader("URL");
+        Grid.Column<Regalo> estadoColumn = regalosGrid.addColumn(Regalo::getEstado)
+                .setHeader("Estado");
+        Grid.Column<Regalo> accionesColumn = regalosGrid.addComponentColumn(regalo -> {
+            Button eliminarButton = new Button("Eliminar");
+            eliminarButton.addClickListener(e -> eliminarRegalo(regalo));
+            return eliminarButton;
+        }).setHeader("Acciones");
 
+        // Configurar el editor para el campo Estado
         Select<EstadoRegalo> estadoField = new Select<>();
         estadoField.setItems(EstadoRegalo.values());
-        binder.forField(estadoField).bind(Regalo::getEstado, Regalo::setEstado);
+        binder.forField(estadoField)
+                .bind(Regalo::getEstado, Regalo::setEstado);
         estadoColumn.setEditorComponent(estadoField);
 
-        TextField precioField = new TextField();
-        binder.forField(precioField).bind(regalo -> regalo.getPrecio() != null ? regalo.getPrecio().toString() : "", (regalo, precio) -> regalo.setPrecio(precio.isEmpty() ? null : Double.valueOf(precio)));
-        precioColumn.setEditorComponent(precioField);
+        // Escuchar el evento de doble clic para iniciar la edición
+        regalosGrid.addItemDoubleClickListener(event -> {
+            if (editor.isOpen()) {
+                editor.cancel();
+            }
+            editor.editItem(event.getItem());
+        });
 
-        TextField urlField = new TextField();
-        binder.forField(urlField).bind(Regalo::getUrl, Regalo::setUrl);
-        urlColumn.setEditorComponent(urlField);
+        // Guardar los cambios del editor al hacer clic en guardar
+        editor.addSaveListener(event -> {
+            Regalo regaloEditado = event.getItem();
+            regaloService.save(regaloEditado); // Guardar los cambios del regalo en la base de datos
+            actualizarCosteLista(); // Actualizar el coste de la lista
+            actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
+        });
 
-        Select<Allegado> allegadoField = new Select<>();
-        allegadoField.setItems(allegadoService.findAll());
-        allegadoField.setItemLabelGenerator(Allegado::getNombre);
-        binder.forField(allegadoField).bind(Regalo::getAllegado, Regalo::setAllegado);
-        allegadoColumn.setEditorComponent(allegadoField);
-
-        regalosGrid.getEditor().setBuffered(true);
-
+        // Refrescar el grid después de cerrar el editor
         regalosGrid.getEditor().addCloseListener(event -> regalosGrid.getDataProvider().refreshItem(event.getItem()));
     }
 
@@ -175,13 +190,25 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         regalo.setAllegado(selectAllegado.getValue());
         regalo.setEstado(EstadoRegalo.POR_COMPRAR);
 
+        // Asignar la lista actual a este regalo
+        regalo.setLista(lista);
+
+        // Guardar el regalo en la base de datos
+        regaloService.save(regalo);
+
+        // Añadir el regalo a la lista local
         regalosList.add(regalo);
+
+        // Actualizar el grid de regalos
         regalosGrid.setItems(regalosList);
 
         nombreRegalo.clear();
         precioRegalo.clear();
         urlRegalo.clear();
         selectAllegado.clear();
+
+        actualizarCosteLista(); // Actualizar el coste de la lista después de agregar un nuevo regalo
+        actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
     }
 
     private void saveLista() {
@@ -195,7 +222,6 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
-        // Verificar que el usuario autenticado sea el propietario de la lista
         Optional<Usuario> optionalUsuario = authenticatedUser.get();
         if (optionalUsuario.isEmpty() || !lista.getUsuario().equals(optionalUsuario.get())) {
             Notification.show("No tiene permisos para editar esta lista.");
@@ -207,23 +233,48 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         lista.setUsuario(obtenerUsuarioAutenticado());
         lista.setEstado(EstadoLista.PENDIENTE);
 
-        double costoTotal = regalosList.stream()
-                .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
-                .sum();
-        lista.setCoste(costoTotal);
-
         lista = listaService.save(lista);
 
+        // Guardar todos los regalos de la lista
         for (Regalo regalo : regalosList) {
-            regalo.setLista(lista);
             regaloService.save(regalo);
         }
 
         Notification.show("Lista de regalos actualizada exitosamente.");
+        getUI().ifPresent(ui -> ui.navigate(ListaView.class));
+    }
+
+    private void actualizarCosteLista() {
+        double costoTotal = regalosList.stream()
+                .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
+                .sum();
+        lista.setCoste(costoTotal);
+        listaService.save(lista); // Guardar la lista con el coste actualizado
     }
 
     private Usuario obtenerUsuarioAutenticado() {
         Optional<Usuario> optionalUsuario = authenticatedUser.get();
         return optionalUsuario.orElse(null);
+    }
+
+    private void eliminarRegalo(Regalo regalo) {
+        regalosList.remove(regalo);
+        regalosGrid.setItems(regalosList);
+        regaloService.deleteById(regalo.getId());
+        actualizarCosteLista(); // Actualizar el coste de la lista después de eliminar un regalo
+        actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
+    }
+
+    private void actualizarEstadoLista() {
+        boolean todosRecibidos = regalosList.stream()
+                .allMatch(regalo -> regalo.getEstado() == EstadoRegalo.RECIBIDO);
+
+        if (todosRecibidos) {
+            lista.setEstado(EstadoLista.CERRADA);
+        } else {
+            lista.setEstado(EstadoLista.PENDIENTE);
+        }
+
+        listaService.save(lista); // Guardar la lista con el nuevo estado
     }
 }

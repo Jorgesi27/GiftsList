@@ -6,10 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.util.List;
-import java.util.UUID;
+
 
 @Setter
 @Getter
@@ -18,9 +16,8 @@ import java.util.UUID;
 public class Lista {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(SqlTypes.CHAR)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
     @Column(name = "nombre", nullable = false, length = 64)
@@ -42,4 +39,5 @@ public class Lista {
 
     @OneToMany(mappedBy = "lista")
     private List<Regalo> regalos;
+
 }
