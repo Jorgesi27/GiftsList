@@ -5,7 +5,6 @@ import com.example.application.domain.UsuarioRepository;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 
 @Component

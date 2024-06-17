@@ -14,7 +14,6 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
 import java.io.Serial;
 
 @PageTitle("Activación de la Cuenta")

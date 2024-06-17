@@ -24,7 +24,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -101,8 +100,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
 
             listaNombre.setValue(lista.getNombre());
 
-            // Cargar todos los regalos de la lista
-            regalosList.clear(); // Limpiar la lista actual de regalos
+            regalosList.clear();
             regalosList.addAll(regaloService.findByListaId(id));
             regalosGrid.setItems(regalosList);
         } else {
@@ -116,10 +114,8 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         Editor<Regalo> editor = regalosGrid.getEditor();
         editor.setBinder(binder);
 
-        // Eliminar todas las columnas generadas automáticamente
         regalosGrid.removeAllColumns();
 
-        // Agregar columnas personalizadas para mostrar todos los datos del regalo
         Grid.Column<Regalo> nombreColumn = regalosGrid.addColumn(Regalo::getNombre)
                 .setHeader("Nombre del Regalo");
         Grid.Column<Regalo> allegadoColumn = regalosGrid.addColumn(regalo -> regalo.getAllegado() != null ? regalo.getAllegado().getNombre() : "")
@@ -136,14 +132,12 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return eliminarButton;
         }).setHeader("Acciones");
 
-        // Configurar el editor para el campo Estado
         Select<EstadoRegalo> estadoField = new Select<>();
         estadoField.setItems(EstadoRegalo.values());
         binder.forField(estadoField)
                 .bind(Regalo::getEstado, Regalo::setEstado);
         estadoColumn.setEditorComponent(estadoField);
 
-        // Escuchar el evento de doble clic para iniciar la edición
         regalosGrid.addItemDoubleClickListener(event -> {
             if (editor.isOpen()) {
                 editor.cancel();
@@ -151,15 +145,13 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             editor.editItem(event.getItem());
         });
 
-        // Guardar los cambios del editor al hacer clic en guardar
         editor.addSaveListener(event -> {
             Regalo regaloEditado = event.getItem();
-            regaloService.save(regaloEditado); // Guardar los cambios del regalo en la base de datos
-            actualizarCosteLista(); // Actualizar el coste de la lista
-            actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
+            regaloService.save(regaloEditado);
+            actualizarCosteLista();
+            actualizarEstadoLista();
         });
 
-        // Refrescar el grid después de cerrar el editor
         regalosGrid.getEditor().addCloseListener(event -> regalosGrid.getDataProvider().refreshItem(event.getItem()));
     }
 
@@ -190,16 +182,9 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         regalo.setAllegado(selectAllegado.getValue());
         regalo.setEstado(EstadoRegalo.POR_COMPRAR);
 
-        // Asignar la lista actual a este regalo
         regalo.setLista(lista);
-
-        // Guardar el regalo en la base de datos
-        regalo = regaloService.save(regalo); // Guardar y obtener el regalo actualizado
-
-        // Añadir el regalo a la lista local
+        regalo = regaloService.save(regalo);
         regalosList.add(regalo);
-
-        // Actualizar el grid de regalos
         regalosGrid.setItems(regalosList);
 
         nombreRegalo.clear();
@@ -207,8 +192,8 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         urlRegalo.clear();
         selectAllegado.clear();
 
-        actualizarCosteLista(); // Actualizar el coste de la lista después de agregar un nuevo regalo
-        actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
+        actualizarCosteLista();
+        actualizarEstadoLista();
     }
 
     private void saveLista() {
@@ -229,7 +214,6 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
-        // Validación de regalos
         if (regalosList.isEmpty()) {
             Notification.show("No se puede guardar una lista sin regalos.");
             return;
@@ -238,15 +222,11 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         lista.setNombre(listaNombre.getValue());
         lista.setUsuario(obtenerUsuarioAutenticado());
 
-        // Guardar todos los regalos de la lista
         for (Regalo regalo : regalosList) {
             regaloService.save(regalo);
         }
 
-        // Actualizar el estado de la lista según los regalos
         actualizarEstadoLista();
-
-        // Guardar la lista con el estado actualizado
         lista = listaService.save(lista);
 
         Notification.show("Lista de regalos actualizada exitosamente.");
@@ -258,7 +238,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
                 .mapToDouble(regalo -> regalo.getPrecio() != null ? regalo.getPrecio() : 0.0)
                 .sum();
         lista.setCoste(costoTotal);
-        listaService.save(lista); // Guardar la lista con el coste actualizado
+        listaService.save(lista);
     }
 
     private Usuario obtenerUsuarioAutenticado() {
@@ -270,12 +250,11 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         regalosList.remove(regalo);
         regalosGrid.setItems(regalosList);
         regaloService.deleteById(regalo.getId());
-        actualizarCosteLista(); // Actualizar el coste de la lista después de eliminar un regalo
-        actualizarEstadoLista(); // Verificar si es necesario actualizar el estado de la lista
+        actualizarCosteLista();
+        actualizarEstadoLista();
     }
 
     private void actualizarEstadoLista() {
-        // Filtrar regalos por la lista actual
         boolean todosRecibidos = regalosList.stream()
                 .filter(regalo -> regalo.getLista().getId().equals(lista.getId())) // Filtrar por la lista actual
                 .allMatch(regalo -> regalo.getEstado() == EstadoRegalo.RECIBIDO);
@@ -286,8 +265,6 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             lista.setEstado(EstadoLista.PENDIENTE);
         }
 
-        System.out.println("Estado actualizado de la lista: " + lista.getEstado()); // Agregar logging para verificar
-
-        listaService.save(lista); // Guardar la lista con el nuevo estado
+        listaService.save(lista);
     }
 }

@@ -1,14 +1,10 @@
 package com.example.application.services;
 
 import com.example.application.domain.Lista;
-import com.example.application.domain.Regalo;
 import com.example.application.domain.Usuario;
-import com.vaadin.flow.data.provider.DataProvider;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 public interface IListaService {
 

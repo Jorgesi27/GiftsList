@@ -39,5 +39,4 @@ public class Lista {
 
     @OneToMany(mappedBy = "lista", fetch = FetchType.EAGER)
     private List<Regalo> regalos;
-
 }

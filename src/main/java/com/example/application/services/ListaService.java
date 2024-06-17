@@ -6,10 +6,9 @@ import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Service
 public class ListaService implements IListaService{
@@ -69,17 +68,12 @@ public class ListaService implements IListaService{
     @Override
     @Transactional
     public void deleteListaAndRegalos(Long id) {
-        // Eliminar regalos de la lista
         regaloRepository.deleteByListaId(id);
-
-        // Eliminar regalos asociados a allegados
         List<Regalo> regalosConAllegados = regaloRepository.findByListaIdAndAllegadoNotNull(id);
         for (Regalo regalo : regalosConAllegados) {
-            regalo.setAllegado(null); // Eliminar la asociación con el allegado
+            regalo.setAllegado(null);
         }
         regaloRepository.saveAll(regalosConAllegados);
-
-        // Eliminar la lista
         listaRepository.deleteById(id);
     }
 }

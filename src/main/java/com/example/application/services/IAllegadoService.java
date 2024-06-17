@@ -2,10 +2,9 @@ package com.example.application.services;
 
 import com.example.application.domain.Allegado;
 import com.example.application.domain.Usuario;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 public interface IAllegadoService {
 

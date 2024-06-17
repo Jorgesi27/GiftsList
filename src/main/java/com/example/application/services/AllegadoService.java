@@ -5,13 +5,10 @@ import com.example.application.domain.AllegadoRepository;
 import com.example.application.domain.Usuario;
 import com.example.application.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Service
 public class AllegadoService implements IAllegadoService{
