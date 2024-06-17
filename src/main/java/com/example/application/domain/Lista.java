@@ -37,7 +37,7 @@ public class Lista {
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "lista")
+    @OneToMany(mappedBy = "lista", fetch = FetchType.EAGER)
     private List<Regalo> regalos;
 
 }

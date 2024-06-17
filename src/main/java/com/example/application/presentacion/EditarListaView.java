@@ -194,7 +194,7 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         regalo.setLista(lista);
 
         // Guardar el regalo en la base de datos
-        regaloService.save(regalo);
+        regalo = regaloService.save(regalo); // Guardar y obtener el regalo actualizado
 
         // Añadir el regalo a la lista local
         regalosList.add(regalo);
@@ -229,16 +229,25 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
+        // Validación de regalos
+        if (regalosList.isEmpty()) {
+            Notification.show("No se puede guardar una lista sin regalos.");
+            return;
+        }
+
         lista.setNombre(listaNombre.getValue());
         lista.setUsuario(obtenerUsuarioAutenticado());
-        lista.setEstado(EstadoLista.PENDIENTE);
-
-        lista = listaService.save(lista);
 
         // Guardar todos los regalos de la lista
         for (Regalo regalo : regalosList) {
             regaloService.save(regalo);
         }
+
+        // Actualizar el estado de la lista según los regalos
+        actualizarEstadoLista();
+
+        // Guardar la lista con el estado actualizado
+        lista = listaService.save(lista);
 
         Notification.show("Lista de regalos actualizada exitosamente.");
         getUI().ifPresent(ui -> ui.navigate(ListaView.class));
@@ -266,7 +275,9 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void actualizarEstadoLista() {
+        // Filtrar regalos por la lista actual
         boolean todosRecibidos = regalosList.stream()
+                .filter(regalo -> regalo.getLista().getId().equals(lista.getId())) // Filtrar por la lista actual
                 .allMatch(regalo -> regalo.getEstado() == EstadoRegalo.RECIBIDO);
 
         if (todosRecibidos) {
@@ -274,6 +285,8 @@ public class EditarListaView extends VerticalLayout implements BeforeEnterObserv
         } else {
             lista.setEstado(EstadoLista.PENDIENTE);
         }
+
+        System.out.println("Estado actualizado de la lista: " + lista.getEstado()); // Agregar logging para verificar
 
         listaService.save(lista); // Guardar la lista con el nuevo estado
     }

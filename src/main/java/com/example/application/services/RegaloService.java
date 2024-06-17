@@ -2,6 +2,9 @@ package com.example.application.services;
 
 import com.example.application.domain.Regalo;
 import com.example.application.domain.RegaloRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,18 @@ public class RegaloService implements IRegaloService{
 
     @Autowired
     private RegaloRepository regaloRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public List<Regalo> findByListaIdAndAllegadoNotNull(Long listaId) {
+        TypedQuery<Regalo> query = entityManager.createQuery(
+                "SELECT r FROM Regalo r WHERE r.lista.id = :listaId AND r.allegado IS NOT NULL",
+                Regalo.class
+        );
+        query.setParameter("listaId", listaId);
+        return query.getResultList();
+    }
 
     @Override
     public Regalo save(Regalo regalo) {

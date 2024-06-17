@@ -27,6 +27,7 @@ public class ListaView extends VerticalLayout {
     private final Grid<Lista> grid = new Grid<>(Lista.class);
     private final Button createButton = new Button("Crear Lista de Regalos");
     private final Button editButton = new Button("Editar Lista");
+    private final Button deleteButton = new Button("Eliminar Lista");
 
     @Autowired
     public ListaView(ListaService listaService, AuthenticatedUser authenticatedUser) {
@@ -34,6 +35,7 @@ public class ListaView extends VerticalLayout {
         this.authenticatedUser = authenticatedUser;
 
         grid.setColumns("nombre", "coste", "estado");
+        grid.asSingleSelect().addValueChangeListener(event -> updateButtonsEnabledState());
         refreshGridData();
 
         createButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("crear-lista")));
@@ -46,14 +48,30 @@ public class ListaView extends VerticalLayout {
             }
         });
 
-        add(new Span("Listas de Regalos"), grid, createButton, editButton);
+        deleteButton.setEnabled(false);
+        deleteButton.addClickListener(e -> {
+            Lista selectedLista = grid.asSingleSelect().getValue();
+            if (selectedLista != null) {
+                listaService.deleteListaAndRegalos(selectedLista.getId());
+                refreshGridData();
+                Notification.show("Lista eliminada correctamente.");
+            } else {
+                Notification.show("Seleccione una lista para eliminar.");
+            }
+        });
+
+        add(new Span("Listas de Regalos"), grid, createButton, editButton, deleteButton);
     }
 
     private void refreshGridData() {
-        // Obtener el usuario autenticado
         authenticatedUser.get().ifPresent(usuario -> {
             List<Lista> listas = listaService.findAllByUsuario(usuario);
             grid.setItems(listas);
         });
+    }
+
+    private void updateButtonsEnabledState() {
+        Lista selectedLista = grid.asSingleSelect().getValue();
+        deleteButton.setEnabled(selectedLista != null);
     }
 }

@@ -74,7 +74,6 @@ public class ActivationView extends VerticalLayout {
         } else {
             status.setText("Ups. La cuenta no pudo ser activada.");
         }
-
     }
 
     public void setEmail(String email) {

@@ -2,6 +2,7 @@ package com.example.application.services;
 
 import com.example.application.domain.*;
 import com.example.application.security.AuthenticatedUser;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,13 +59,27 @@ public class ListaService implements IListaService{
     }
 
     @Override
-    public void deleteListaAndRegalos(Long id) {
-        regaloRepository.deleteByListaId(id);
-        listaRepository.deleteById(id);
+    @Transactional
+    public List<Lista> findAllByUsuario(Usuario usuario) {
+        List<Lista> listas = listaRepository.findByUsuario(usuario);
+        listas.forEach(lista -> Hibernate.initialize(lista.getRegalos()));
+        return listas;
     }
 
     @Override
-    public List<Lista> findAllByUsuario(Usuario usuario) {
-        return listaRepository.findByUsuario(usuario);
+    @Transactional
+    public void deleteListaAndRegalos(Long id) {
+        // Eliminar regalos de la lista
+        regaloRepository.deleteByListaId(id);
+
+        // Eliminar regalos asociados a allegados
+        List<Regalo> regalosConAllegados = regaloRepository.findByListaIdAndAllegadoNotNull(id);
+        for (Regalo regalo : regalosConAllegados) {
+            regalo.setAllegado(null); // Eliminar la asociación con el allegado
+        }
+        regaloRepository.saveAll(regalosConAllegados);
+
+        // Eliminar la lista
+        listaRepository.deleteById(id);
     }
 }

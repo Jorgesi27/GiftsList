@@ -14,4 +14,5 @@ public interface IRegaloService {
     void deleteByListaId(Long listaId);
     List<Regalo> findByListaId(Long listaId);
     boolean hasRegalos(Long allegadoId);
+    public List<Regalo> findByListaIdAndAllegadoNotNull(Long listaId);
 }

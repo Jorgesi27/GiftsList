@@ -3,42 +3,40 @@ package com.example.application.services;
 import com.example.application.domain.Usuario;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.net.InetAddress;
 
 @Service
 public class EmailRealService implements EmailService {
+
     private final JavaMailSender mailSender;
+    private final HttpServletRequest request;
 
     @Value("${spring.mail.email}")
     private String defaultMail;
 
-    @Value("${server.port}")
-    private int serverPort;
-
-    public EmailRealService(JavaMailSender mailSender) {
+    public EmailRealService(JavaMailSender mailSender, HttpServletRequest request) {
         this.mailSender = mailSender;
+        this.request = request;
     }
 
     private String getServerUrl() {
-
-        // Generate the server URL
-        String serverUrl = "http://";
-        serverUrl += InetAddress.getLoopbackAddress().getHostAddress();
-        serverUrl += ":" + serverPort + "/";
+        String serverUrl = request.getScheme() + "://" + request.getServerName();
+        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+            serverUrl += ":" + request.getServerPort();
+        }
+        serverUrl += "/";
         return serverUrl;
     }
 
     @Override
     public boolean sendRegistrationEmail(Usuario user) {
-
         MimeMessage message = mailSender.createMimeMessage();
-
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 
         String subject = "Bienvenido";

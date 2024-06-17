@@ -10,4 +10,5 @@ public interface RegaloRepository extends JpaRepository<Regalo, Long> {
     void deleteByListaId(Long listaId);
     List<Regalo> findByListaId(Long listaId);
     List<Regalo> findByAllegadoId(Long allegadoId);
+    List<Regalo> findByListaIdAndAllegadoNotNull(Long id);
 }
