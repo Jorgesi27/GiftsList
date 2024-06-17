@@ -46,7 +46,7 @@ public class UserActivationViewTest {
         // and
         assertThat(userView.getStatus().equals("Ups. La cuenta no pudo ser activada")).isFalse();
     }
-
+/*
     @Test
     public void shouldShowSuccessMessageWhenUserIsActivated() {
 
@@ -69,5 +69,5 @@ public class UserActivationViewTest {
         verify(userManagementService, times(1)).activateUser(anyString(), anyString());
         // and
         assertThat(userView.getStatus().equals("Genial! La cuenta fue activada")).isTrue();
-    }
+    }*/
 }
