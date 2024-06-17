@@ -175,7 +175,7 @@
 
     <distributionManagement>
         <repository>
-            <id>github</id>
+            <id>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</id>
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/Jorgesi27/GiftsList</url>
         </repository>
