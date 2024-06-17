@@ -6,7 +6,7 @@
     <groupId>com.example.application</groupId>
     <artifactId>GiftsList</artifactId>
     <name>GiftsList</name>
-    <version>1.5.7</version>
+    <version>1.1.4</version>
     <packaging>jar</packaging>
 
     <properties>
