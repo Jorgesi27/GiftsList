@@ -285,6 +285,7 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
+                            <finalName>GiftsListIW-app</finalName>
                         </configuration>
                     </plugin>
                 </plugins>
